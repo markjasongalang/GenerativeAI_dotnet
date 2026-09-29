@@ -61,4 +61,36 @@ public class Program
             history.AddMessages(response); // Extracts messages from the ChatResponse and adds them to the history
         }
     }
+
+    public static async Task SimpleChatApp(IChatClient chatClient)
+    {
+        var conversation = new List<ChatMessage>()
+        {
+            new ChatMessage(
+                ChatRole.System,
+                "You are a helpful assistant. Be concise but friendly.")
+        };
+
+        Console.WriteLine("Chat started. Type 'quit' to exit.\n");
+
+        while (true)
+        {
+            Console.Write("You: ");
+            string? userInput = Console.ReadLine();
+
+            if (string.IsNullOrEmpty(userInput) || userInput.ToLower() == "quit")
+            {
+                break;
+            }
+
+            // Add user message to history
+            conversation.Add(new ChatMessage(ChatRole.User, userInput));
+
+            // Add AI response to history
+            ChatResponse response = await chatClient.GetResponseAsync(conversation);
+            conversation.AddMessages(response);
+
+            Console.WriteLine($"AI: {response.Text}\n");
+        }
+    }
 }
