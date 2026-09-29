@@ -82,12 +82,6 @@ RawContentLength  : 17
 docker exec -it ollama ollama run llama3.2
 ```
 
-### Remove a model
-
-```docker
-docker exec -it ollama ollama rm llama2:latest
-```
-
 ### Implementation
 
 I created a Console app project in Visual Studio for this tutorial.
