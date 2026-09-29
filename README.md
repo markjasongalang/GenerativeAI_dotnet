@@ -86,7 +86,7 @@ docker exec -it ollama ollama run llama3.2
 
 I created a Console app project in Visual Studio for this tutorial.
 
-Apparently, we'll need to install these NuGet packages:
+We need to install these NuGet packages first:
 
 - [Microsoft.Extensions.AI (MEAI)](https://www.nuget.org/packages/Microsoft.Extensions.AI/) 
 - [OllamaSharp](https://www.nuget.org/packages/OllamaSharp)
