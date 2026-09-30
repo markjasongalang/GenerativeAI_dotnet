@@ -13,6 +13,11 @@ public class Program
 
     }
 
+    /// <summary>
+    /// AI analyzes the sentiment of customer reviews.
+    /// </summary>
+    /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task SentimentAnalysis(IChatClient chatClient)
     {
         var prompt = new StringBuilder();
@@ -26,6 +31,11 @@ public class Program
         Console.WriteLine(response.Text);
     }
 
+    /// <summary>
+    /// The AI's behavior is controlled by the system message (pre-prompt) to be a "Senior .NET Developer".
+    /// </summary>
+    /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task ExpertDotnetDeveloper(IChatClient chatClient)
     {
         chatClient = ChatClientBuilderChatClientExtensions.AsBuilder(chatClient)
@@ -62,6 +72,11 @@ public class Program
         }
     }
 
+    /// <summary>
+    /// A working chat application.
+    /// </summary>
+    /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task SimpleChatApp(IChatClient chatClient)
     {
         var conversation = new List<ChatMessage>()
