@@ -33,6 +33,10 @@ enabling efficient and portable deployment of software applications.
 
 You can check out the Ollama models here: <https://ollama.com/search>
 
+**EDIT:** When I arrived at [Streaming and Structured Output](https://github.com/microsoft/Generative-AI-for-beginners-dotnet/blob/main/02-GenerativeAITechniques/02-streaming-structured-output.md) part,
+specifically, the sentiment example, I wasn't satisfied with the response of [llama3.2:1b](https://ollama.com/library/llama3.2), so after searching, I replaced it with [gemma3:1b](https://ollama.com/library/gemma3)
+which is faster, lighter (only 815 MB), and a bit more accurate since it matched some of the neutral responses in the example.
+
 ## Get Started
 
 ### Download image from Docker Hub registry
@@ -76,10 +80,16 @@ ParsedHtml        : mshtml.HTMLDocumentClass
 RawContentLength  : 17
 ```
 
+## Pull a Model from the Ollama model registry
+
+```docker
+ollama pull gemma3:1b
+```
+
 ### Run a model locally
 
 ```docker
-docker exec -it ollama ollama run llama3.2
+docker exec -it ollama ollama run gemma3:1b
 ```
 
 ### Implementation

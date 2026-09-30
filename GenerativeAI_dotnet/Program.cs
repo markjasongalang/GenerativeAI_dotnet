@@ -8,7 +8,7 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        IChatClient client = new OllamaApiClient(new Uri("http://localhost:11434"), "llama3.2:1b");
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "gemma3:1b");
 
 
     }
@@ -133,6 +133,31 @@ public class Program
 
             // Add the streamed response to history
             chatHistory.AddMessages(updates);
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public static async Task BasicStructuredOutput(IChatClient chatClient)
+    {
+        var reviews = new string[]
+        {
+            "Best purchase ever!",
+            "Returned it immediately.",
+            "Hello",
+            "It works as advertised.",
+            "The packaging was damaged but otherwise okay."
+        };
+
+        foreach (string review in reviews)
+        {
+            ChatResponse<Sentiment> response = await chatClient.GetResponseAsync<Sentiment>(
+                $"What's the sentiment of this review? {review}");
+
+            Console.WriteLine($"Review: {review} | Sentiment: {response.Result}");
         }
     }
 }
