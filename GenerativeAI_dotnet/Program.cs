@@ -10,7 +10,6 @@ public class Program
     {
         IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "gemma3:1b");
 
-
     }
 
     /// <summary>
@@ -137,7 +136,7 @@ public class Program
     }
 
     /// <summary>
-    /// 
+    /// Microsoft.Extensions.AI (MEAI) provides structure output support that return strongly-typed objects instead of plain text.
     /// </summary>
     /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
@@ -154,6 +153,7 @@ public class Program
 
         foreach (string review in reviews)
         {
+            // Map to Sentiment enum
             ChatResponse<Sentiment> response = await chatClient.GetResponseAsync<Sentiment>(
                 $"What's the sentiment of this review? {review}");
 
