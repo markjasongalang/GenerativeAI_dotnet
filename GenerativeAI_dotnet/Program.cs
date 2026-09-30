@@ -108,4 +108,31 @@ public class Program
             Console.WriteLine($"AI: {response.Text}\n");
         }
     }
+
+    /// <summary>
+    /// Streaming lets you display tokens as they arrive, creating a more responsive experience, like what you see in ChatGPT or Copilot.
+    /// </summary>
+    /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public static async Task BasicStreamingPattern(IChatClient chatClient)
+    {
+        var chatHistory = new List<ChatMessage>();
+
+        while (true)
+        {
+            Console.Write("Q: ");
+            chatHistory.Add(new ChatMessage(ChatRole.User, Console.ReadLine()));
+
+            var updates = new List<ChatResponseUpdate>();
+            await foreach (ChatResponseUpdate update in chatClient.GetStreamingResponseAsync(chatHistory))
+            {
+                Console.Write(update.Text);
+                updates.Add(update);
+            }
+            Console.WriteLine();
+
+            // Add the streamed response to history
+            chatHistory.AddMessages(updates);
+        }
+    }
 }
