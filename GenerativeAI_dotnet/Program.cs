@@ -178,4 +178,27 @@ public class Program
         Console.WriteLine($"Confidence: {response.Result.ConfidenceScore}");
         Console.WriteLine($"Key phrases: {string.Join(", ", response.Result.KeyPhrases)}");
     }
+
+    /// <summary>
+    /// AI extracts contact information from the sample text and the response is mapped to <see cref="ContactInfo"/>.
+    /// </summary>
+    /// <param name="chatClient">The client abstraction for interactiing with AI services that provide chat capabilities.</param>
+    /// <returns>A task that represents an asynchronous operation.</returns>
+    public static async Task ExtractContactInformation(IChatClient chatClient)
+    {
+        var text = @"
+            Hi, I'm Sarah Johnson from Contoso Ltd. 
+            You can reach me at sarah.johnson@contoso.com 
+            or call my office at 555-0123.
+        ";
+
+        ChatResponse<ContactInfo> response = await chatClient.GetResponseAsync<ContactInfo>(
+            $"Extract contact information from this text: {text}");
+
+        ContactInfo contact = response.Result;
+        Console.WriteLine($"Name: {contact.Name}");
+        Console.WriteLine($"Email: {contact.Email}");
+        Console.WriteLine($"Phone: {contact.Phone}");
+        Console.WriteLine($"Company: {contact.Company}");
+    }
 }
