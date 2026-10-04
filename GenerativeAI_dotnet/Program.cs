@@ -201,4 +201,26 @@ public class Program
         Console.WriteLine($"Phone: {contact.Phone}");
         Console.WriteLine($"Company: {contact.Company}");
     }
+
+    /// <summary>
+    /// AI analyzes meeting notes and maps the items to a list of type <see cref="ActionItem"/>.
+    /// </summary>
+    /// <param name="chatClient">The client abstraction for interactiing with AI services that provide chat capabilities.</param>
+    /// <returns>A task that represents an asynchronous operation.</returns>
+    public static async Task ListAndCollectionsStructuredOutput(IChatClient chatClient)
+    {
+        var meetingNotes = @"
+            Discussed Q1 roadmap. John will prepare the budget by Friday (high priority).
+            Sarah needs to review the marketing plan next week (medium priority).
+            Team should update documentation ongoing (low priority).
+        ";
+
+        ChatResponse<List<ActionItem>> response = await chatClient.GetResponseAsync<List<ActionItem>>(
+            $"Extract all action items from these meeting notes: {meetingNotes}");
+
+        foreach (ActionItem item in response.Result)
+        {
+            Console.WriteLine($"- {item.Task} | {item.Assignee} | {item.DueDate} | {item.Priority}");
+        }
+    }
 }
