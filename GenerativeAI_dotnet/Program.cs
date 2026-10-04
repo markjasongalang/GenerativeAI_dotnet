@@ -223,4 +223,45 @@ public class Program
             Console.WriteLine($"- {item.Task} | {item.Assignee} | {item.DueDate} | {item.Priority}");
         }
     }
+
+    /// <summary>
+    /// AI analyzes a customer views for a coffee maker (user query), then streams its thinking, and finally maps the 
+    /// final analysis to <see cref="AnalysisResult"/>.
+    /// </summary>
+    /// <param name="chatClient">The client abstraction for interactiing with AI services that provide chat capabilities.</param>
+    /// <returns>A task that represents an asynchronous operation.</returns>
+    public static async Task CombiningStreamingAndStructuredOutput(IChatClient chatClient)
+    {
+        var userQuery =
+            """
+            Analyze these customer reviews for the "AeroBrew" coffee maker and tell me
+            what customers think overall:
+
+            1. "Brews fast and the coffee tastes great, but the lid feels flimsy." (4 stars)
+            2. "Stopped working after 2 months. Support was slow to respond." (1 star)
+            3. "Love the sleek design and the timer feature. Worth the price!" (5 stars)
+            4. "Water reservoir is too small for a family. Otherwise decent." (3 stars)
+            5. "Easy to clean, quiet, and makes a perfect cup every time." (5 stars)
+            """;
+
+        Console.WriteLine("AI is analyzing...");
+        var fullText = "";
+        await foreach (ChatResponseUpdate update in chatClient.GetStreamingResponseAsync(userQuery))
+        {
+            Console.Write(update.Text);
+            fullText += update.Text;
+        }
+
+        ChatResponse<AnalysisResult> structured = await chatClient.GetResponseAsync<AnalysisResult>(
+            $"Extract key data from: {fullText}");
+
+        AnalysisResult analysisResult = structured.Result;
+        Console.WriteLine($"Product: {analysisResult.Product}");
+        Console.WriteLine($"Overall Sentiment: {analysisResult.OverallSentiment}");
+        Console.WriteLine($"Average Rating: {analysisResult.AverageRating}");
+        Console.WriteLine($"Review Count: {analysisResult.ReviewCount}");
+        Console.WriteLine($"Strengths: {string.Join(", ", analysisResult.Strengths)}");
+        Console.WriteLine($"Recommended Actions: {string.Join(", ", analysisResult.RecommendActions)}");
+        Console.WriteLine($"Needs Urgent Attention: {analysisResult.NeedsUrgentAttention}");
+    }
 }
