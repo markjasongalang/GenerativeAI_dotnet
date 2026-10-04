@@ -10,6 +10,7 @@ public class Program
     {
         IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "gemma3:1b");
 
+
     }
 
     /// <summary>
@@ -159,5 +160,22 @@ public class Program
 
             Console.WriteLine($"Review: {review} | Sentiment: {response.Result}");
         }
+    }
+
+    /// <summary>
+    /// Chat response is mapped to a record type (for complex responses).
+    /// </summary>
+    /// <param name="chatClient">The client abstraction for interactiing with AI services that provide chat capabilities.</param>
+    /// <returns>A task that represents an asynchronous operation.</returns>
+    public static async Task ComplexStructuredOutputWithRecords(IChatClient chatClient)
+    {
+        var review = "This product exceeded my expectations in every way!";
+        ChatResponse<SentimentAnalysis> response = await chatClient.GetResponseAsync<SentimentAnalysis>(
+            $"Analyze this review: {review}");
+
+        Console.WriteLine($"Text: {response.Result.ResponseText}");
+        Console.WriteLine($"Sentiment: {response.Result.ReviewSentiment}");
+        Console.WriteLine($"Confidence: {response.Result.ConfidenceScore}");
+        Console.WriteLine($"Key phrases: {string.Join(", ", response.Result.KeyPhrases)}");
     }
 }
