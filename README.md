@@ -215,3 +215,8 @@ I'm only catering to .NET topics. An airplane is a type of aircraft, and while i
 ```
 
 As of now (Sept. 29, 2026), I haven't formulated the correct system message to restrict the AI model to only answer .NET topics.
+
+### Function Calling
+
+When I arrived at the [Function Calling](https://learn.microsoft.com/en-us/dotnet/ai/ichatclient#tool-calling) part of the tutorial,
+[gemma3:1b](https://ollama.com/library/gemma3) cannot perform function calls so I decided to add another model, [granite3.1-moe](https://ollama.com/library/granite3.1-moe).

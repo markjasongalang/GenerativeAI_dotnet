@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.ComponentModel;
+using System.Text;
 using Microsoft.Extensions.AI;
 using OllamaSharp;
 
@@ -8,12 +9,9 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "gemma3:1b");
-
 
     }
 
-    /// <summary>
     /// AI analyzes the sentiment of customer reviews.
     /// </summary>
     /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
@@ -264,4 +262,59 @@ public class Program
         Console.WriteLine($"Recommended Actions: {string.Join(", ", analysisResult.RecommendActions)}");
         Console.WriteLine($"Needs Urgent Attention: {analysisResult.NeedsUrgentAttention}");
     }
+
+    /// <summary>
+    /// AI models utilizes <see cref="GetWeather(string)"/> function call in order to formulate a response
+    /// in getting the current weather which came from a prompt.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <remarks>
+    /// Refer to <see href="https://learn.microsoft.com/en-us/dotnet/ai/ichatclient#tool-calling"/>
+    /// </remarks>
+    public static async Task FirstFunctionCall()
+    {
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "granite4:350m");
+
+        chatClient = ChatClientBuilderChatClientExtensions
+            .AsBuilder(chatClient)
+            .UseFunctionInvocation()
+            .Build();
+
+        // Define available functions
+        var chatOptions = new ChatOptions
+        {
+            Tools = [AIFunctionFactory.Create(GetWeather)] // Wraps method as AI-callable function
+        };
+
+        IAsyncEnumerable<ChatResponseUpdate> response = chatClient.GetStreamingResponseAsync(
+            "Should I bring an umbrella to Seattle today?",
+            chatOptions);
+
+        await foreach (ChatResponseUpdate update in response)
+        {
+            Console.Write(update);
+        }
+
+        Console.WriteLine();
+    }
+
+    #region First function call helper
+
+    /// <summary>
+    /// Gives AI the ability to check the weather.
+    /// </summary>
+    /// <param name="location">The location of the weather to be determined.</param>
+    /// <returns>The temperature and conditions of the specified location.</returns>
+    /// <remarks>
+    /// The <see cref="DescriptionAttribute"/> tells AI what this function does.
+    /// </remarks>
+    [Description("Get the current weather for a location")]
+    public static string GetWeather(string location)
+    {
+        int temperature = Random.Shared.Next(15, 30);
+        string conditions = Random.Shared.Next(0, 2) == 0 ? "sunny" : "cloudy";
+        return $"{location}: {temperature}°C and {conditions}";
+    }
+
+    #endregion
 }
