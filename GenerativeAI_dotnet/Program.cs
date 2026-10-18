@@ -9,15 +9,22 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+#if DEBUG
+        Console.Clear();
+#endif
 
+        // TODO: On each of the methods below (except the function call),
+        // add their own chat client instance.
     }
 
     /// AI analyzes the sentiment of customer reviews.
     /// </summary>
     /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public static async Task SentimentAnalysis(IChatClient chatClient)
+    public static async Task SentimentAnalysis()
     {
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "gemma3:1b");
+
         var prompt = new StringBuilder();
         prompt.AppendLine("Analyze the sentiment of each review. Output: Review number, Sentiment (Positive/Negative/Neutral), Key reason.");
         prompt.AppendLine();
@@ -34,8 +41,10 @@ public class Program
     /// </summary>
     /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public static async Task ExpertDotnetDeveloper(IChatClient chatClient)
+    public static async Task ExpertDotnetDeveloper()
     {
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "gemma3:1b");
+
         chatClient = ChatClientBuilderChatClientExtensions.AsBuilder(chatClient)
             .ConfigureOptions(options => options.Temperature ??= 0.4f)
             .Build();
@@ -75,8 +84,10 @@ public class Program
     /// </summary>
     /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public static async Task SimpleChatApp(IChatClient chatClient)
+    public static async Task SimpleChatApp()
     {
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "gemma3:1b");
+
         var conversation = new List<ChatMessage>()
         {
             new ChatMessage(
@@ -112,8 +123,10 @@ public class Program
     /// </summary>
     /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public static async Task BasicStreamingPattern(IChatClient chatClient)
+    public static async Task BasicStreamingPattern()
     {
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "gemma3:1b");
+
         var chatHistory = new List<ChatMessage>();
 
         while (true)
@@ -139,8 +152,10 @@ public class Program
     /// </summary>
     /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public static async Task BasicStructuredOutput(IChatClient chatClient)
+    public static async Task BasicStructuredOutput()
     {
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "gemma3:1b");
+
         var reviews = new string[]
         {
             "Best purchase ever!",
@@ -165,8 +180,10 @@ public class Program
     /// </summary>
     /// <param name="chatClient">The client abstraction for interactiing with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents an asynchronous operation.</returns>
-    public static async Task ComplexStructuredOutputWithRecords(IChatClient chatClient)
+    public static async Task ComplexStructuredOutputWithRecords()
     {
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "gemma3:1b");
+
         var review = "This product exceeded my expectations in every way!";
         ChatResponse<SentimentAnalysis> response = await chatClient.GetResponseAsync<SentimentAnalysis>(
             $"Analyze this review: {review}");
@@ -182,8 +199,10 @@ public class Program
     /// </summary>
     /// <param name="chatClient">The client abstraction for interactiing with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents an asynchronous operation.</returns>
-    public static async Task ExtractContactInformation(IChatClient chatClient)
+    public static async Task ExtractContactInformation()
     {
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "gemma3:1b");
+
         var text = @"
             Hi, I'm Sarah Johnson from Contoso Ltd. 
             You can reach me at sarah.johnson@contoso.com 
@@ -205,8 +224,10 @@ public class Program
     /// </summary>
     /// <param name="chatClient">The client abstraction for interactiing with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents an asynchronous operation.</returns>
-    public static async Task ListAndCollectionsStructuredOutput(IChatClient chatClient)
+    public static async Task ListAndCollectionsStructuredOutput()
     {
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "gemma3:1b");
+
         var meetingNotes = @"
             Discussed Q1 roadmap. John will prepare the budget by Friday (high priority).
             Sarah needs to review the marketing plan next week (medium priority).
@@ -228,8 +249,10 @@ public class Program
     /// </summary>
     /// <param name="chatClient">The client abstraction for interactiing with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents an asynchronous operation.</returns>
-    public static async Task CombiningStreamingAndStructuredOutput(IChatClient chatClient)
+    public static async Task CombiningStreamingAndStructuredOutput()
     {
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "gemma3:1b");
+
         var userQuery =
             """
             Analyze these customer reviews for the "AeroBrew" coffee maker and tell me
