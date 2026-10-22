@@ -13,13 +13,11 @@ public class Program
         Console.Clear();
 #endif
 
-        // TODO: On each of the methods below (except the function call),
-        // add their own chat client instance.
+        await FunctionCallWithParams();
     }
 
     /// AI analyzes the sentiment of customer reviews.
     /// </summary>
-    /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task SentimentAnalysis()
     {
@@ -39,7 +37,6 @@ public class Program
     /// <summary>
     /// The AI's behavior is controlled by the system message (pre-prompt) to be a "Senior .NET Developer".
     /// </summary>
-    /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task ExpertDotnetDeveloper()
     {
@@ -82,7 +79,6 @@ public class Program
     /// <summary>
     /// A working chat application.
     /// </summary>
-    /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task SimpleChatApp()
     {
@@ -121,7 +117,6 @@ public class Program
     /// <summary>
     /// Streaming lets you display tokens as they arrive, creating a more responsive experience, like what you see in ChatGPT or Copilot.
     /// </summary>
-    /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task BasicStreamingPattern()
     {
@@ -150,7 +145,6 @@ public class Program
     /// <summary>
     /// Microsoft.Extensions.AI (MEAI) provides structure output support that return strongly-typed objects instead of plain text.
     /// </summary>
-    /// <param name="chatClient">The client abstraction for interacting with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task BasicStructuredOutput()
     {
@@ -178,7 +172,6 @@ public class Program
     /// <summary>
     /// Chat response is mapped to a record type (for complex responses).
     /// </summary>
-    /// <param name="chatClient">The client abstraction for interactiing with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents an asynchronous operation.</returns>
     public static async Task ComplexStructuredOutputWithRecords()
     {
@@ -197,7 +190,6 @@ public class Program
     /// <summary>
     /// AI extracts contact information from the sample text and the response is mapped to <see cref="ContactInfo"/>.
     /// </summary>
-    /// <param name="chatClient">The client abstraction for interactiing with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents an asynchronous operation.</returns>
     public static async Task ExtractContactInformation()
     {
@@ -222,7 +214,6 @@ public class Program
     /// <summary>
     /// AI analyzes meeting notes and maps the items to a list of type <see cref="ActionItem"/>.
     /// </summary>
-    /// <param name="chatClient">The client abstraction for interactiing with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents an asynchronous operation.</returns>
     public static async Task ListAndCollectionsStructuredOutput()
     {
@@ -247,7 +238,6 @@ public class Program
     /// AI analyzes a customer views for a coffee maker (user query), then streams its thinking, and finally maps the 
     /// final analysis to <see cref="AnalysisResult"/>.
     /// </summary>
-    /// <param name="chatClient">The client abstraction for interactiing with AI services that provide chat capabilities.</param>
     /// <returns>A task that represents an asynchronous operation.</returns>
     public static async Task CombiningStreamingAndStructuredOutput()
     {
@@ -337,6 +327,56 @@ public class Program
         int temperature = Random.Shared.Next(15, 30);
         string conditions = Random.Shared.Next(0, 2) == 0 ? "sunny" : "cloudy";
         return $"{location}: {temperature}°C and {conditions}";
+    }
+
+    #endregion
+
+    /// <summary>
+    /// AI learns the parameter types and its purposes.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public static async Task FunctionCallWithParams()
+    {
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "granite4:350m");
+
+        chatClient = ChatClientBuilderChatClientExtensions
+            .AsBuilder(chatClient)
+            .UseFunctionInvocation()
+            .Build();
+
+        var chatOptions = new ChatOptions { Tools = [AIFunctionFactory.Create(ConvertTemperature)] };
+
+        IAsyncEnumerable<ChatResponseUpdate> response = chatClient.GetStreamingResponseAsync(
+            "Convert 456 fahrenheit to celsius",
+            chatOptions);
+        
+        await foreach (ChatResponseUpdate update in response)
+        {
+            Console.Write(update);
+        }
+
+        Console.WriteLine();
+    }
+
+    #region Function call with parameters helper
+
+    /// <summary>
+    /// A helper function that calculates from Celsius to Fahrenheit or vice-versa.
+    /// </summary>
+    /// <returns>The final formatted conversion of values.</returns>
+    [Description("Convert a temperature between Celsius and Fahrenheit")]
+    private static string ConvertTemperature(
+        [Description("The temperature value to convert")] double value,
+        [Description("The unit to convert from: 'C' for Celsius, 'F' for Fahrenheit")] string fromUnit)
+    {
+        if (fromUnit.Equals("C", StringComparison.CurrentCulture))
+        {
+            double fahrenheit = (value * 9 / 5) + 32;
+            return $"{value}°C = {fahrenheit:F1}°F";
+        }
+
+        double celsius = (value - 32) * 5 / 9;
+        return $"{value}°F = {celsius:F1}°C";
     }
 
     #endregion
