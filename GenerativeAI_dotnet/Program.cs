@@ -1,19 +1,39 @@
 ﻿using System.ComponentModel;
 using System.Text;
+using GenerativeAI_dotnet.Configurations;
+using GenerativeAI_dotnet.Tools;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Configuration;
 using OllamaSharp;
 
 namespace GenerativeAI_dotnet;
 
 public class Program
 {
+    /// <summary>
+    /// According to the <see href="https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines">guidelines</see>,
+    /// the recommended approach is to reuse <see cref="HttpClient"/> instances during the application lifecycle.
+    /// </summary>
+    private static HttpClient _httpClient = new();
+
     public static async Task Main(string[] args)
     {
+        string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT", EnvironmentVariableTarget.User) 
+            ?? "Production";
+
+        //Console.WriteLine(AppContext.BaseDirectory);
+
+        IConfigurationRoot? configuration = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
+            .Build();
+
 #if DEBUG
         Console.Clear();
 #endif
 
-        await FunctionCallWithParams();
+
     }
 
     /// AI analyzes the sentiment of customer reviews.
@@ -361,7 +381,7 @@ public class Program
     #region Function call with parameters helper
 
     /// <summary>
-    /// A helper function that calculates from Celsius to Fahrenheit or vice-versa.
+    /// Helper function for AI that calculates from Celsius to Fahrenheit or vice-versa.
     /// </summary>
     /// <returns>The final formatted conversion of values.</returns>
     [Description("Convert a temperature between Celsius and Fahrenheit")]
@@ -380,4 +400,52 @@ public class Program
     }
 
     #endregion
+
+    public static async Task MultipleFunctions(IConfiguration configuration, string environment)
+    {
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "granite4:350m");
+
+        chatClient = ChatClientBuilderChatClientExtensions
+            .AsBuilder(chatClient)
+            .UseFunctionInvocation()
+            .Build();
+
+        var weatherTools = new WeatherTools(_httpClient, configuration, environment);
+        var deviceSpecsTools = new DeviceSpecsTools(_httpClient, configuration, environment);
+        var searchGamesTools = new SearchGamesTools(_httpClient, configuration, environment);
+
+        string test = await searchGamesTools.SearchGamesAsync("Halo");
+
+        var chatOptions = new ChatOptions 
+        { 
+            Tools = [
+                AIFunctionFactory.Create(weatherTools.GetWeatherAsync),
+                AIFunctionFactory.Create(deviceSpecsTools.GetDeviceSpecsAsync),
+                AIFunctionFactory.Create(searchGamesTools.SearchGamesAsync)
+            ]
+        };
+
+        var chatHistory = new List<ChatMessage>()
+        {
+            new ChatMessage(ChatRole.System, 
+                "Using tools/function calling, you have access to weather, device specs, and game search. " +
+                "Keep your responses concise (1-4 sentences only if it's enough).")
+        };
+        
+        while (true)
+        {
+            Console.Write("Q: ");
+            chatHistory.Add(new ChatMessage(ChatRole.User, Console.ReadLine()));
+
+            var updates = new List<ChatResponseUpdate>();
+            await foreach (ChatResponseUpdate update in chatClient.GetStreamingResponseAsync(chatHistory, chatOptions))
+            {
+                Console.Write(update.Text);
+                updates.Add(update);
+            }
+            Console.WriteLine();
+            
+            chatHistory.AddMessages(updates);
+        }
+    }
 }
