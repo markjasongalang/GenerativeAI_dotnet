@@ -414,8 +414,6 @@ public class Program
         var deviceSpecsTools = new DeviceSpecsTools(_httpClient, configuration, environment);
         var searchGamesTools = new SearchGamesTools(_httpClient, configuration, environment);
 
-        string test = await searchGamesTools.SearchGamesAsync("Halo");
-
         var chatOptions = new ChatOptions 
         { 
             Tools = [
