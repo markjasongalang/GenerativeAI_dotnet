@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Text;
-using GenerativeAI_dotnet.Configurations;
 using GenerativeAI_dotnet.Tools;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
@@ -33,7 +32,7 @@ public class Program
         Console.Clear();
 #endif
 
-
+        await MultiplePracticalFunctions();
     }
 
     /// AI analyzes the sentiment of customer reviews.
@@ -446,4 +445,72 @@ public class Program
             chatHistory.AddMessages(updates);
         }
     }
+    
+    public static async Task MultiplePracticalFunctions() // Real-world example
+    {
+        IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"), "granite4:350m");
+
+        chatClient = ChatClientBuilderChatClientExtensions
+            .AsBuilder(chatClient)
+            .UseFunctionInvocation()
+            .Build();
+
+        var chatOptions = new ChatOptions
+        {
+            Tools = [
+                AIFunctionFactory.Create(GetCurrentTime),
+                AIFunctionFactory.Create(CalculateTip),
+                AIFunctionFactory.Create(ConvertCurrency)
+            ]
+        };
+
+        Console.WriteLine(await chatClient.GetResponseAsync(
+            "My dinner bill is $85. What's a good tip?", chatOptions));
+
+        Console.WriteLine(await chatClient.GetResponseAsync(
+            "How much is 500 euros in Japanese yen?", chatOptions));
+
+        Console.WriteLine(await chatClient.GetResponseAsync(
+            "What time is it Tokyo right now?", chatOptions));
+    }
+
+    #region Real-world example helpers
+
+    [Description("Get the current date and time in a specific timezone")]
+    private static string GetCurrentTime(string timezone = "UTC")
+    {
+        TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(timezone);
+        DateTime time = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
+
+        return $"Current time is in {timezone}: {time:f}";
+    }
+
+    [Description("Calculate the tip amount for a bill")]
+    private static string CalculateTip(double billAmount, double tipPercentage = 18)
+    {
+        double tip = billAmount * (tipPercentage / 100);
+        double total = billAmount + tip;
+
+        return $"Bill: {billAmount:F2}, Tip: ({tipPercentage}%): {tip:F2}, Total {total:F2}";
+    }
+
+    [Description("Convert between currencies using exchange rates")]
+    private static string ConvertCurrency(double amount, string from, string to)
+    {
+        // Simplified - in reality, you'd call an exchange rate API
+        var rates = new Dictionary<string, double>
+        {
+            ["USD"] = 1.0,
+            ["EUR"] = 0.85,
+            ["GBP"] = 0.73,
+            ["JPY"] = 110.0
+        };
+
+        double usdAmount = amount / rates[from];
+        double result = usdAmount * rates[to];
+
+        return $"{amount} {from} = {result:F2} {to}";
+    }
+
+    #endregion
 }
